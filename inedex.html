@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Multi'Verts — Présentation technique</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --vert: #2d7d46; --vert-clair: #4caf72; --vert-sombre: #1a5c30;
+  --jaune: #f5c518; --rouge: #d94f3d;
+  --bg: #0d1117; --bg2: #161b22; --bg3: #21262d;
+  --border: #30363d; --text: #e6edf3; --muted: #8b949e;
+  --accent: #3fb950;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* TOP BAND */
+.band { height: 4px; background: linear-gradient(90deg, var(--vert) 0% 33%, var(--jaune) 33% 66%, var(--rouge) 66% 100%); }
+
+/* NAV */
+nav {
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 56px;
+}
+.nav-logo { font-weight: 800; font-size: 1rem; color: var(--accent); letter-spacing: -0.5px; }
+.nav-links { display: flex; gap: 28px; }
+.nav-links a { font-size: 0.82rem; color: var(--muted); font-weight: 700; letter-spacing: 0.3px; transition: color 0.2s; }
+.nav-links a:hover { color: var(--text); text-decoration: none; }
+
+/* HERO */
+.hero {
+  max-width: 860px; margin: 0 auto;
+  padding: 80px 24px 60px;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: center;
+}
+.hero-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3);
+  color: var(--accent); font-size: 0.75rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px; margin-bottom: 18px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.hero h1 { font-size: 2.6rem; font-weight: 800; line-height: 1.1; letter-spacing: -1.5px; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero-sub { font-size: 1rem; color: var(--muted); line-height: 1.7; margin-top: 16px; }
+.hero-badges { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.badge {
+  padding: 5px 12px; border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;
+  border: 1px solid var(--border);
+}
+.badge.html  { background: rgba(229,77,38,0.1);  border-color: rgba(229,77,38,0.4);  color: #e84d23; }
+.badge.css   { background: rgba(21,114,182,0.1); border-color: rgba(21,114,182,0.4); color: #4fa3e0; }
+.badge.js    { background: rgba(247,223,30,0.1); border-color: rgba(247,223,30,0.4); color: #f7df1e; }
+.badge.gas   { background: rgba(52,168,83,0.1); border-color: rgba(52,168,83,0.4);  color: #34a853; }
+.badge.sheets{ background: rgba(15,157,88,0.1); border-color: rgba(15,157,88,0.4);  color: #0f9d58; }
+
+/* Terminal mock */
+.terminal {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; overflow: hidden; font-family: 'JetBrains Mono', monospace;
+}
+.terminal-bar {
+  background: var(--bg2); padding: 10px 14px;
+  display: flex; align-items: center; gap: 7px;
+  border-bottom: 1px solid var(--border);
+}
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot.r { background: #ff5f57; } .dot.y { background: #ffbd2e; } .dot.g { background: #28c840; }
+.terminal-body { padding: 18px 20px; font-size: 0.78rem; line-height: 1.9; }
+.t-comment { color: var(--muted); }
+.t-key   { color: #79c0ff; }
+.t-str   { color: #a5d6ff; }
+.t-fn    { color: #d2a8ff; }
+.t-kw    { color: #ff7b72; }
+.t-val   { color: var(--accent); }
+.t-prompt { color: var(--muted); user-select: none; }
+
+/* SECTIONS */
+section { max-width: 860px; margin: 0 auto; padding: 0 24px 72px; }
+.section-label {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--muted); font-weight: 700; letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 14px;
+}
+.section-label::before {
+  content: ''; display: block; height: 1px; width: 28px; background: var(--border);
+}
+.section-label::after {
+  content: ''; display: block; height: 1px; flex: 1; background: var(--border);
+}
+h2 { font-size: 1.7rem; font-weight: 800; letter-spacing: -0.8px; margin-bottom: 28px; }
+
+/* ARCHITECTURE */
+.arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.arch-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 20px; position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.arch-card:hover { border-color: var(--accent); }
+.arch-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.arch-card.frontend::before { background: var(--rouge); }
+.arch-card.backend::before  { background: var(--jaune); }
+.arch-card.db::before       { background: var(--accent); }
+.arch-icon { font-size: 1.6rem; margin-bottom: 10px; }
+.arch-title { font-size: 0.9rem; font-weight: 800; margin-bottom: 6px; }
+.arch-desc { font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+.arch-tech {
+  margin-top: 12px; font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem; color: var(--accent); background: rgba(63,185,80,0.08);
+  border: 1px solid rgba(63,185,80,0.2); padding: 3px 8px; border-radius: 4px;
+  display: inline-block;
+}
+
+/* FLUX */
+.flow { display: flex; flex-direction: column; gap: 0; }
+.flow-item {
+  display: grid; grid-template-columns: 28px 1fr; gap: 16px; align-items: start;
+  position: relative;
+}
+.flow-item:not(:last-child)::before {
+  content: ''; position: absolute; left: 13px; top: 36px; bottom: -12px;
+  width: 2px; background: var(--border);
+}
+.flow-num {
+  width: 28px; height: 28px; background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 700;
+  color: var(--accent); flex-shrink: 0; position: relative; z-index: 1;
+}
+.flow-body { padding-bottom: 28px; }
+.flow-title { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+.flow-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+.flow-code {
+  margin-top: 8px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem;
+  color: var(--accent); background: rgba(63,185,80,0.06); border: 1px solid rgba(63,185,80,0.15);
+  padding: 6px 10px; border-radius: 6px; display: inline-block;
+}
+
+/* SHEET TABLE */
+.sheet-table {
+  width: 100%; border-collapse: collapse; font-size: 0.82rem;
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
+}
+.sheet-table th {
+  background: var(--bg3); color: var(--muted); font-size: 0.7rem;
+  padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border);
+  letter-spacing: 0.5px;
+}
+.sheet-table td { padding: 9px 14px; border-bottom: 1px solid rgba(48,54,61,0.6); }
+.sheet-table tr:last-child td { border-bottom: none; }
+.sheet-table .col-letter { color: var(--accent); font-weight: 700; }
+.sheet-table .col-key { color: #79c0ff; }
+.sheet-table .col-ex { color: var(--muted); font-size: 0.75rem; }
+.sheet-table .special-row td { background: rgba(247,197,24,0.06); color: #f5c518; }
+
+/* API ROUTES */
+.routes { display: flex; flex-direction: column; gap: 14px; }
+.route {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden;
+}
+.route-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.method {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700;
+  padding: 3px 9px; border-radius: 4px; letter-spacing: 0.5px;
+}
+.method.get  { background: rgba(52,168,83,0.15); color: #34a853; border: 1px solid rgba(52,168,83,0.3); }
+.method.post { background: rgba(247,197,24,0.15); color: #f5c518; border: 1px solid rgba(247,197,24,0.3); }
+.route-path { font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: var(--text); }
+.route-desc-text { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
+.route-body { padding: 14px 16px; font-size: 0.8rem; color: var(--muted); line-height: 1.6; }
+.route-body code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;
+  background: var(--bg3); padding: 2px 6px; border-radius: 4px; color: var(--text);
+}
+
+/* INSTALL */
+.install-steps { display: flex; flex-direction: column; gap: 20px; }
+.install-step {
+  background: var(--bg2); border: 1px solid var(--border); border-radius: 10px;
+  padding: 20px; display: grid; grid-template-columns: 36px 1fr; gap: 14px;
+}
+.step-n {
+  width: 36px; height: 36px; background: rgba(63,185,80,0.1); border: 1px solid rgba(63,185,80,0.3);
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--accent); font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.step-title { font-size: 0.92rem; font-weight: 700; margin-bottom: 6px; }
+.step-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.6; }
+.step-desc code {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+  background: var(--bg3); padding: 1px 6px; border-radius: 4px; color: var(--text);
+}
+.inline-code {
+  display: block; margin-top: 10px; background: var(--bg);
+  border: 1px solid var(--border); border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.76rem;
+  color: var(--accent); padding: 10px 14px; line-height: 1.7;
+}
+
+/* WARN BOX */
+.warn-box {
+  background: rgba(247,197,24,0.06); border: 1px solid rgba(247,197,24,0.25);
+  border-radius: 8px; padding: 12px 16px; font-size: 0.82rem;
+  color: #e5b800; line-height: 1.6; display: flex; gap: 10px; align-items: flex-start;
+}
+
+/* FOOTER */
+footer {
+  background: var(--bg2); border-top: 1px solid var(--border);
+  text-align: center; padding: 32px 24px; font-size: 0.8rem; color: var(--muted);
+}
+footer strong { color: var(--text); }
+footer a { color: var(--accent); }
+.footer-band { height: 3px; background: linear-gradient(90deg, var(--vert) 0% 33%, var(--jaune) 33% 66%, var(--rouge) 66% 100%); }
+
+@media (max-width: 700px) {
+  .hero { grid-template-columns: 1fr; }
+  .arch-grid { grid-template-columns: 1fr; }
+  nav { padding: 0 16px; }
+  .nav-links { gap: 16px; }
+  section { padding: 0 16px 56px; }
+  .hero { padding: 48px 16px 40px; }
+  .hero h1 { font-size: 1.9rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="band"></div>
+
+<nav>
+  <div class="nav-logo">🌿 Multi'Verts · Débats</div>
+  <div class="nav-links">
+    <a href="#architecture">Architecture</a>
+    <a href="#api">API</a>
+    <a href="#schema">Schéma</a>
+    <a href="#install">Install</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-label">📖 Documentation technique</div>
+    <h1>Plateforme de<br>débats <em>Multi'Verts</em></h1>
+    <p class="hero-sub">
+      Application web <strong>zero-dependency</strong> connectée à Google Sheets via Apps Script.
+      Un seul fichier HTML, aucun serveur, déployable partout.
+    </p>
+    <div class="hero-badges">
+      <span class="badge html">HTML5</span>
+      <span class="badge css">CSS3</span>
+      <span class="badge js">JS ES2020</span>
+      <span class="badge gas">Apps Script</span>
+      <span class="badge sheets">Google Sheets</span>
+    </div>
+  </div>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+    </div>
+    <div class="terminal-body">
+      <span class="t-comment">// Configuration</span><br>
+      <span class="t-kw">const</span> <span class="t-key">API_URL</span> = <span class="t-str">'https://script.google.com<br>&nbsp;&nbsp;/macros/s/[ID]/exec'</span>;<br><br>
+      <span class="t-comment">// Charger les débats</span><br>
+      <span class="t-kw">const</span> <span class="t-key">resp</span> = <span class="t-kw">await</span> <span class="t-fn">fetch</span>(<span class="t-key">API_URL</span>);<br>
+      <span class="t-kw">const</span> <span class="t-key">data</span> = <span class="t-kw">await</span> <span class="t-key">resp</span>.<span class="t-fn">json</span>();<br><br>
+      <span class="t-comment">// À propos depuis Z2</span><br>
+      <span class="t-fn">fetch</span>(<span class="t-key">API_URL</span> + <span class="t-str">'?action=apropos'</span>)<br>
+      &nbsp;&nbsp;.<span class="t-fn">then</span>(<span class="t-key">r</span> => <span class="t-key">r</span>.<span class="t-fn">json</span>())<br>
+      &nbsp;&nbsp;.<span class="t-fn">then</span>(<span class="t-key">d</span> => <span class="t-fn">render</span>(<span class="t-key">d</span>.<span class="t-val">apropos</span>));
+    </div>
+  </div>
+</div>
+
+<!-- ARCHITECTURE -->
+<section id="architecture">
+  <div class="section-label">01 · Architecture</div>
+  <h2>Stack technique</h2>
+
+  <div class="arch-grid">
+    <div class="arch-card frontend">
+      <div class="arch-icon">🖥️</div>
+      <div class="arch-title">Frontend</div>
+      <div class="arch-desc">
+        Un seul fichier <code>index.html</code> contenant HTML, CSS et JavaScript.
+        Aucune dépendance externe, aucun build tool.
+        Fonts via Google Fonts CDN uniquement.
+      </div>
+      <span class="arch-tech">HTML / CSS / JS vanilla</span>
+    </div>
+
+    <div class="arch-card backend">
+      <div class="arch-icon">⚡</div>
+      <div class="arch-title">Backend</div>
+      <div class="arch-desc">
+        Google Apps Script déployé en Web App.
+        Expose un endpoint <code>GET</code> et <code>POST</code>.
+        Pas de serveur à maintenir, hébergé par Google.
+      </div>
+      <span class="arch-tech">Google Apps Script</span>
+    </div>
+
+    <div class="arch-card db">
+      <div class="arch-icon">📊</div>
+      <div class="arch-title">Base de données</div>
+      <div class="arch-desc">
+        Google Sheets comme datastore.
+        Lecture ligne par ligne, écriture via <code>appendRow</code> et <code>getRange</code>.
+        Modifiable directement sans accès technique.
+      </div>
+      <span class="arch-tech">Google Sheets</span>
+    </div>
+  </div>
+
+  <div style="margin-top: 32px;">
+    <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">Flux de données</p>
+    <div class="flow">
+      <div class="flow-item">
+        <div class="flow-num">1</div>
+        <div class="flow-body">
+          <div class="flow-title">Chargement initial</div>
+          <div class="flow-desc">Le navigateur charge <code>index.html</code>. Au <code>DOMContentLoaded</code>, <code>loadIdeas()</code> est appelé.</div>
+          <span class="flow-code">GET /exec → JSON array des débats</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">2</div>
+        <div class="flow-body">
+          <div class="flow-title">Soumission d'un débat</div>
+          <div class="flow-desc">Le formulaire construit un tableau <code>row</code> et envoie un POST avec <code>action: "append"</code>.</div>
+          <span class="flow-code">POST /exec → body: {action:"append", row:[...]}</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">3</div>
+        <div class="flow-body">
+          <div class="flow-title">Vote</div>
+          <div class="flow-desc">Chaque vote envoie un POST avec <code>action: "update"</code>, le numéro de ligne, la colonne (8=likes, 9=dislikes) et la nouvelle valeur.</div>
+          <span class="flow-code">POST /exec → body: {action:"update", row:N, col:8, val:5}</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">4</div>
+        <div class="flow-body">
+          <div class="flow-title">Page À propos</div>
+          <div class="flow-desc">Lecture de la cellule <code>Z2</code> de Feuille 1 via un paramètre GET.</div>
+          <span class="flow-code">GET /exec?action=apropos → {apropos: "texte..."}</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-num">5</div>
+        <div class="flow-body">
+          <div class="flow-title">Rafraîchissement</div>
+          <div class="flow-desc">Un <code>setInterval</code> rappelle <code>loadIdeas()</code> toutes les 60 secondes pour maintenir la liste à jour.</div>
+          <span class="flow-code">setInterval(loadIdeas, 60_000)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API -->
+<section id="api">
+  <div class="section-label">02 · API Reference</div>
+  <h2>Endpoints Apps Script</h2>
+
+  <div class="routes">
+    <div class="route">
+      <div class="route-header">
+        <span class="method get">GET</span>
+        <span class="route-path">/exec</span>
+        <span class="route-desc-text">Liste tous les débats</span>
+      </div>
+      <div class="route-body">
+        Retourne un tableau JSON de tous les débats depuis <code>Feuille 1</code>. La première ligne (headers) est utilisée comme clés d'objet.<br>
+        <strong style="color: var(--text);">Réponse :</strong>
+        <code>[{id, titre, description, categorie, auteur, groupe, date, likes, dislikes}, ...]</code>
+      </div>
+    </div>
+
+    <div class="route">
+      <div class="route-header">
+        <span class="method get">GET</span>
+        <span class="route-path">/exec?action=apropos</span>
+        <span class="route-desc-text">Contenu page À propos</span>
+      </div>
+      <div class="route-body">
+        Lit la cellule <code>Z2</code> de <code>Feuille 1</code> et retourne son contenu.<br>
+        <strong style="color: var(--text);">Réponse :</strong> <code>{"apropos": "texte libre..."}</code>
+      </div>
+    </div>
+
+    <div class="route">
+      <div class="route-header">
+        <span class="method post">POST</span>
+        <span class="route-path">/exec</span>
+        <span class="route-desc-text">Ajouter un débat</span>
+      </div>
+      <div class="route-body">
+        Body JSON avec <code>action: "append"</code> et un tableau <code>row</code> dans l'ordre des colonnes A→I.<br>
+        <strong style="color: var(--text);">Body :</strong> <code>{"action":"append","row":["id","titre","desc","cat","auteur","groupe","date",0,0]}</code>
+      </div>
+    </div>
+
+    <div class="route">
+      <div class="route-header">
+        <span class="method post">POST</span>
+        <span class="route-path">/exec</span>
+        <span class="route-desc-text">Mettre à jour un vote</span>
+      </div>
+      <div class="route-body">
+        Body JSON avec <code>action: "update"</code>, le numéro de ligne Google Sheet (<code>row</code>), la colonne (<code>col</code> — 8 pour likes, 9 pour dislikes) et la nouvelle valeur (<code>val</code>).<br>
+        <strong style="color: var(--text);">Body :</strong> <code>{"action":"update","row":3,"col":8,"val":5}</code>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <div class="warn-box">
+      ⚠️ Après chaque modification du code Apps Script, il faut <strong>créer une nouvelle version</strong> dans Gérer les déploiements. Sauvegarder sans redéployer laisse l'ancienne version active.
+    </div>
+  </div>
+</section>
+
+<!-- SCHEMA SHEET -->
+<section id="schema">
+  <div class="section-label">03 · Schéma de données</div>
+  <h2>Structure Google Sheets</h2>
+
+  <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 20px;">
+    Feuille : <code style="font-family:'JetBrains Mono',monospace; color: var(--accent);">Feuille 1</code> — Ligne 1 = en-têtes, données à partir de la ligne 2.
+  </p>
+
+  <table class="sheet-table">
+    <thead>
+      <tr>
+        <th>COL</th>
+        <th>EN-TÊTE</th>
+        <th>TYPE</th>
+        <th>EXEMPLE</th>
+        <th>NOTES</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="col-letter">A</td><td class="col-key">id</td><td>String</td><td class="col-ex">idea_1776874511624</td><td style="font-size:0.75rem;color:var(--muted)">Généré côté client (Date.now())</td></tr>
+      <tr><td class="col-letter">B</td><td class="col-key">titre</td><td>String</td><td class="col-ex">Faut-il interdire...</td><td style="font-size:0.75rem;color:var(--muted)">Max 80 chars</td></tr>
+      <tr><td class="col-letter">C</td><td class="col-key">description</td><td>String</td><td class="col-ex">Ce débat porte sur...</td><td style="font-size:0.75rem;color:var(--muted)">Max 400 chars</td></tr>
+      <tr><td class="col-letter">D</td><td class="col-key">categorie</td><td>String (slug)</td><td class="col-ex">societe / ecologie...</td><td style="font-size:0.75rem;color:var(--muted)">12 valeurs possibles</td></tr>
+      <tr><td class="col-letter">E</td><td class="col-key">auteur</td><td>String</td><td class="col-ex">Léa</td><td style="font-size:0.75rem;color:var(--muted)">Défaut: "Anonyme"</td></tr>
+      <tr><td class="col-letter">F</td><td class="col-key">groupe</td><td>String</td><td class="col-ex">Multi'Verts</td><td style="font-size:0.75rem;color:var(--muted)">Optionnel</td></tr>
+      <tr><td class="col-letter">G</td><td class="col-key">date</td><td>String</td><td class="col-ex">21/04/2026</td><td style="font-size:0.75rem;color:var(--muted)">Format FR locale</td></tr>
+      <tr><td class="col-letter">H</td><td class="col-key">likes</td><td>Integer</td><td class="col-ex">5</td><td style="font-size:0.75rem;color:var(--muted)">Mis à jour par col=8</td></tr>
+      <tr><td class="col-letter">I</td><td class="col-key">dislikes</td><td>Integer</td><td class="col-ex">2</td><td style="font-size:0.75rem;color:var(--muted)">Mis à jour par col=9</td></tr>
+      <tr class="special-row">
+        <td class="col-letter">Z</td>
+        <td class="col-key">—</td>
+        <td>String</td>
+        <td class="col-ex">Bienvenue sur...</td>
+        <td style="font-size:0.75rem;">⚠ Ligne 2 uniquement · Page À propos</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div style="margin-top: 16px; font-size: 0.8rem; color: var(--muted); line-height: 1.6;">
+    Le tri côté client se fait par score : <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">score = likes - dislikes</code>. 
+    Les votes sont persistés en <code style="font-family:'JetBrains Mono',monospace;color:var(--accent)">localStorage</code> (clé <code style="font-family:'JetBrains Mono',monospace;color:var(--text)">multiverts_votes_v1</code>).
+  </div>
+</section>
+
+<!-- INSTALL -->
+<section id="install">
+  <div class="section-label">04 · Installation</div>
+  <h2>Mise en place rapide</h2>
+
+  <div class="install-steps">
+    <div class="install-step">
+      <div class="step-n">1</div>
+      <div>
+        <div class="step-title">Créer le Google Sheet</div>
+        <div class="step-desc">Nouveau fichier Sheets → onglet nommé exactement <code>Feuille 1</code> → ligne 1 : <code>id, titre, description, categorie, auteur, groupe, date, likes, dislikes</code>. Copier l'ID depuis l'URL.</div>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-n">2</div>
+      <div>
+        <div class="step-title">Apps Script — coller le code</div>
+        <div class="step-desc">Extensions → Apps Script → remplacer tout le contenu par le code ci-dessous :</div>
+        <span class="inline-code">
+          const SHEET_ID = 'VOTRE_ID_ICI';<br><br>
+          function doGet(e) {<br>
+          &nbsp;&nbsp;if (e.parameter.action === 'apropos') {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;const sheet = SpreadsheetApp.openById(SHEET_ID)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.getSheetByName('Feuille 1');<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;const texte = sheet.getRange('Z2').getValue();<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;return ContentService<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.createTextOutput(JSON.stringify({ apropos: texte }))<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;.setMimeType(ContentService.MimeType.JSON);<br>
+          &nbsp;&nbsp;}<br>
+          &nbsp;&nbsp;const sheet = SpreadsheetApp.openById(SHEET_ID)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.getSheetByName('Feuille 1');<br>
+          &nbsp;&nbsp;const rows = sheet.getDataRange().getValues();<br>
+          &nbsp;&nbsp;const headers = rows[0];<br>
+          &nbsp;&nbsp;const data = rows.slice(1).map(r => {<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;const obj = {};<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;headers.forEach((h, i) => obj[h] = r[i]);<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;return obj;<br>
+          &nbsp;&nbsp;});<br>
+          &nbsp;&nbsp;return ContentService<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.createTextOutput(JSON.stringify(data))<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.setMimeType(ContentService.MimeType.JSON);<br>
+          }<br><br>
+          function doPost(e) {<br>
+          &nbsp;&nbsp;const sheet = SpreadsheetApp.openById(SHEET_ID)<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.getSheetByName('Feuille 1');<br>
+          &nbsp;&nbsp;const body = JSON.parse(e.postData.contents);<br>
+          &nbsp;&nbsp;if (body.action === 'append') sheet.appendRow(body.row);<br>
+          &nbsp;&nbsp;if (body.action === 'update')<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;sheet.getRange(body.row, body.col).setValue(body.val);<br>
+          &nbsp;&nbsp;return ContentService.createTextOutput('ok')<br>
+          &nbsp;&nbsp;&nbsp;&nbsp;.setMimeType(ContentService.MimeType.TEXT);<br>
+          }
+        </span>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-n">3</div>
+      <div>
+        <div class="step-title">Déployer en Web App</div>
+        <div class="step-desc">Déployer → Nouveau déploiement → Type : <strong>Application Web</strong> → Exécuter en tant que : <strong>Moi</strong> → Accès : <strong>Tout le monde</strong> → Déployer. Copier l'URL.</div>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-n">4</div>
+      <div>
+        <div class="step-title">Mettre à jour API_URL dans index.html</div>
+        <div class="step-desc">Chercher <code>const API_URL =</code> et remplacer la valeur par l'URL copiée.</div>
+      </div>
+    </div>
+
+    <div class="install-step">
+      <div class="step-n">5</div>
+      <div>
+        <div class="step-title">Héberger et tester</div>
+        <div class="step-desc">GitHub Pages, Netlify, Vercel — n'importe quel hébergeur statique. En local : <code>python3 -m http.server 8080</code> (file:// bloque les fetch).</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="footer-band"></div>
+<footer>
+  <strong>Idées de débats — Multi'Verts</strong> · Documentation technique<br>
+  Développé par <strong>Ethan MORGADO</strong> ·
+  <a href="mailto:contact@ebwebs.org">contact@ebwebs.org</a>
+</footer>
+
+</body>
+</html>
